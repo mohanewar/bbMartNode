@@ -178,6 +178,7 @@ exports.uploadProducts = async (req, res) => {
         var isFreeDelivery = req.body.isFreeDelivery;
         var isEmi = req.body.isEmi;
         var imageUrl = req.body.imageUrl;
+        var rowStatus=req.body.rowStatus;
         var previousList
         var newId
         if(!isDeal){
@@ -191,6 +192,12 @@ exports.uploadProducts = async (req, res) => {
         }
         pool.query("select * from upload_products",(err,respones1)=>{
             if(err){
+                result={
+                    status:201,
+                    reason:err
+                }
+                  res.set('Access-Control-Allow-Origin', urlLink);
+                    res.json(result);
                 return err;
             }else{
                 previousList=respones1.rows
@@ -202,8 +209,14 @@ exports.uploadProducts = async (req, res) => {
             }
                               pool.query("INSERT INTO upload_products VALUES (" + "'" + name + "'" + "," + "'" + description +
                          "'" + "," + "'" + mrp +  "'"  + "," + "'" + discount +  "'"  + ",'" + isDeal + "'"+ ",'" + isFreeDelivery + "'"+
-                         ",'" + isEmi + "'"+ ",'" + imageUrl + "'"+  ",'" + newId + "'"+ ")",(err,respones)=>{
+                         ",'" + isEmi + "'"+ ",'" + imageUrl + "'"+  ",'" + newId + "','"+ rowStatus + "')",(err,respones)=>{
                         if(err){
+                             result={
+                    status:201,
+                    reason:err
+                }
+                  res.set('Access-Control-Allow-Origin', urlLink);
+                    res.json(result);
                             return err;
                         }
                          console.log(res)
@@ -240,7 +253,7 @@ exports.getProductList = async (req, res) => {
     let transaction;
     try {
       
-        pool.query("select * from UPLOAD_PRODUCTS",(err,response)=>{
+        pool.query("select * from UPLOAD_PRODUCTS where row_status ='" +1+ "'",(err,response)=>{
             if(err){
                 console.log(err);
                 return result={
@@ -261,6 +274,118 @@ exports.getProductList = async (req, res) => {
                 }
             }
         }  )
+       
+        
+    }
+    catch (err) {
+        console.log(err);
+        result = {
+            status: 401,
+            reason: "Error getting login information : " + err,
+            accessToken: null
+        };
+        try { if (transaction) await transaction.rollback(); } catch (e) { }
+            res.set('Access-Control-Allow-Origin', urlLink);
+
+        res.json(result);
+    }
+};
+
+exports.updateProducts = async (req, res) => {
+    let result;
+    let transaction;
+    try {
+        var name = req.body.product_name;
+        var description = req.body.product_description;
+        var mrp = req.body.product_mrp;
+        var discount = req.body.discount_price;
+        var isDeal = req.body.is_deal;
+        var isFreeDelivery = req.body.is_free_delivery;
+        var isEmi = req.body.is_no_emi;
+        var imageUrl = req.body.thumbnail_url;
+        var previousList
+        var newId
+        if(!isDeal){
+            isDeal=false
+        }
+        if(!isFreeDelivery){
+            isFreeDelivery=false
+        }
+        if(!isEmi){
+            isEmi=false
+        }
+        console.log("UPDATE upload_products SET product_description ='" + description + "',product_mrp ='" +
+            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"' where unique_id='" +req.body.unique_id +"'" 
+            )
+           pool.query("UPDATE upload_products SET product_description ='" + description + "',product_mrp ='" +
+            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"' where unique_id='" +req.body.unique_id +"'" ,(err,respones)=>{
+                        if(err){
+                            result={
+                            status:201,
+                            reason:'err:'+err
+                        }
+                       
+                        }else{
+                        result={
+                            status:200,
+                            reason:'success'
+                        }
+                        }
+console.log(res)
+                         
+                        res.set('Access-Control-Allow-Origin', urlLink);
+                    res.json(result);
+
+        })
+
+        
+      
+       
+        
+    }
+    catch (err) {
+        console.log(err);
+        result = {
+            status: 401,
+            reason: "Error getting login information : " + err,
+            accessToken: null
+        };
+        try { if (transaction) await transaction.rollback(); } catch (e) { }
+            res.set('Access-Control-Allow-Origin', urlLink);
+
+        res.json(result);
+    }
+};
+
+exports.deleteProduct = async (req, res) => {
+    let result;
+    let transaction;
+    try {
+        var uniqueId = req.body.uniqueId;
+    
+     
+           pool.query("UPDATE upload_products SET row_status ='" + 0 +"' where unique_id ='" +uniqueId+"'" ,(err,respones)=>{
+                        if(err){
+                            result={
+                            status:201,
+                            reason:'err:'+err
+                        }
+                       
+                        }else{
+                        result={
+                            status:200,
+                            reason:'success'
+                        }
+                        }
+console.log(res)
+                         
+                        res.set('Access-Control-Allow-Origin', urlLink);
+                    res.json(result);
+
+        })
+
+        
+      
        
         
     }
