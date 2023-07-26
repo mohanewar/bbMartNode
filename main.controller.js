@@ -190,7 +190,7 @@ exports.uploadProducts = async (req, res) => {
         if(!isEmi){
             isEmi=false
         }
-        pool.query("select * from upload_products",(err,respones1)=>{
+        pool.query("SELECT max(unique_id) FROM upload_products; ",(err,respones1)=>{
             if(err){
                 result={
                     status:201,
@@ -203,13 +203,14 @@ exports.uploadProducts = async (req, res) => {
                 previousList=respones1.rows
             }
             if(previousList.length>0){
-               newId = (parseInt(previousList[previousList.length-1].unique_id)) + 1
+               newId = (parseInt(previousList[0].max)) + 1
             }else{
                 newId=1
             }
+            var lastModifiedTime=new Date().toISOString()
                               pool.query("INSERT INTO upload_products VALUES (" + "'" + name + "'" + "," + "'" + description +
                          "'" + "," + "'" + mrp +  "'"  + "," + "'" + discount +  "'"  + ",'" + isDeal + "'"+ ",'" + isFreeDelivery + "'"+
-                         ",'" + isEmi + "'"+ ",'" + imageUrl + "'"+  ",'" + newId + "','"+ rowStatus + "')",(err,respones)=>{
+                         ",'" + isEmi + "'"+ ",'" + imageUrl + "'"+  ",'" + newId + "','"+ rowStatus + "','" + lastModifiedTime+ "')",(err,respones)=>{
                         if(err){
                              result={
                     status:201,
@@ -253,7 +254,7 @@ exports.getProductList = async (req, res) => {
     let transaction;
     try {
       
-        pool.query("select * from UPLOAD_PRODUCTS where row_status ='" +1+ "'",(err,response)=>{
+        pool.query("select * from UPLOAD_PRODUCTS where row_status ='" +1+ "' ORDER BY last_modified_time DESC" ,(err,response)=>{
             if(err){
                 console.log(err);
                 return result={
@@ -314,11 +315,13 @@ exports.updateProducts = async (req, res) => {
         if(!isEmi){
             isEmi=false
         }
+            var lastModifiedTime=new Date().toISOString()
+
         console.log("UPDATE upload_products SET product_description ='" + description + "',product_mrp ='" +
-            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"' where unique_id='" +req.body.unique_id +"'" 
+            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"',last_modified_time='"+lastModifiedTime+ "' where unique_id='" +req.body.unique_id +"'" 
             )
            pool.query("UPDATE upload_products SET product_description ='" + description + "',product_mrp ='" +
-            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"' where unique_id='" +req.body.unique_id +"'" ,(err,respones)=>{
+            mrp +"',discount_price='" +discount+ "',is_deal ='" + isDeal +"',is_free_delivery='" + isFreeDelivery+"',is_no_emi ='"+isEmi+"',thumbnail_url='"+imageUrl+"',last_modified_time='"+lastModifiedTime+"' where unique_id='" +req.body.unique_id +"'" ,(err,respones)=>{
                         if(err){
                             result={
                             status:201,
