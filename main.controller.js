@@ -38,8 +38,8 @@ exports.login = async (req, res) => {
         var userName = req.body.email;
         var password = req.body.password;
         console.log(userName,password);
-       pool.query("SELECT * FROM user_credential where user_name= '" +userName+ "' and password='" +password +"'",(err,respones)=>{
-            if(err){
+       pool.query("SELECT * FROM user_credential where user_name= '" +userName + "'",(err,respones)=>{
+            if(err){ 
                 return err;
             }
             console.log(res)
